@@ -1,28 +1,25 @@
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Scanner;
 
 /**
  * @author michael@familientoft.net
  */
 public class GameApp {
-   public static final String BINGO_DATA_DIR = "D:/src/bingobanko/data/";
-   public static final String BINGO_TRAINING_DIR = "D:/src/bingobanko/training/";
    private ArrayList<Plade> plader = new ArrayList<Plade>();
    private ArrayList<Integer> numbers;
 
    public static void main(String[] args) throws Exception {
-      createDirs();
 
       GameApp gameRunner = new GameApp();
-      gameRunner.start(BINGO_DATA_DIR);
+      gameRunner.start(SystemConfiguration.DATA_DIRECTORY);
       System.out.println("Spillet starter, indlæst " + gameRunner.plader.size() + " bingo plader");
       gameRunner.readNumbers();
    }
 
    private static void createDirs() {
-      new File(BINGO_DATA_DIR).mkdirs();
-      new File(BINGO_TRAINING_DIR).mkdirs();
    }
 
    public GameApp() {
@@ -41,6 +38,9 @@ public class GameApp {
          }
          int maxSeen = 0;
          int seenOfMax = 0;
+
+         Collections.shuffle(plader);
+
          Plade.LineWinnerInfo seen = null;
          for (Plade plade : plader) {
             if(plade.isWinner(numbers)) {
@@ -80,10 +80,10 @@ public class GameApp {
       }
    }
 
-   private void start(String dir) throws Exception {
+   private void start(String path) throws Exception {
       System.out.println("Indlæser bingoplader, vent et øjeblik");
-      File path = new File(dir);
-      File[] files = path.listFiles();
+      File dir = new File(path);
+      File[] files = dir.listFiles();
       int nr = 0;
       for (File file : files) {
          File numberFile = new File(file, "data.dat");

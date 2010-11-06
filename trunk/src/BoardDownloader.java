@@ -21,27 +21,25 @@ public class BoardDownloader {
    private static JFrame frame = new JFrame();
    private static OCRScanner ocrScanner = new OCRScanner();
 
+   private static int boards = 0;
+
    public static void main(String[] args) throws Exception {
       frame.setVisible(true);
       initTraining(ocrScanner);
       Random random = new Random();
 
       BoardDownloader stripper = new BoardDownloader();
-      for(int i=0;i<5000;i++) {
+      while(true) {
          try {
             stripper.http();
             long millis = (long)(random.nextDouble() * 10000) + 23000;
-            System.out.println("Sleeping " + millis + " milliseconds");
+            System.out.println("Venter " + millis + " milliseconds, saa tv2 ikke bliver sure...");
             Thread.sleep(millis);
          } catch (Exception e) {
             System.out.println("Ignoring error from server : " + e.getMessage());
             Thread.sleep(60000);
          }
       }
-
-      System.out.println("FINISHED");
-
-      System.exit(0);
    }
 
    public BoardDownloader() {
@@ -63,7 +61,7 @@ public class BoardDownloader {
    }
 
    private void http() throws Exception {
-      File rootDir = new File(GameApp.BINGO_DATA_DIR);
+      File rootDir = new File(SystemConfiguration.DATA_DIRECTORY);
       URL url = new URL("http://bingobanko.tv2.dk/print/");
       URLConnection urlConnection = url.openConnection();
       urlConnection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.2.3) Gecko/20100401");
@@ -90,7 +88,7 @@ public class BoardDownloader {
 
          int realStart = startPosition + searchConstant.length();
          String picName = s.substring(realStart, endPosition);
-         System.out.println("picName = " + picName);
+         System.out.println("Hentet plade " + (boards++) + " (" + picName + ")");
 
          URL pictureURL = new URL("http://bingobanko.tv2.dk/board/" + picName);
          URLConnection connection = pictureURL.openConnection();
@@ -162,8 +160,8 @@ public class BoardDownloader {
       TrainingImageLoader loader = new TrainingImageLoader();
       HashMap<Character, ArrayList<TrainingImage>> hashMap = new HashMap<Character, ArrayList<TrainingImage>>();
       for (int i = 0; i < 10; i++) {
-         String filename = GameApp.BINGO_TRAINING_DIR + "char" + i + ".png";
-         loader.load(frame, filename, new CharacterRange('0' + i, '0' + i), hashMap);
+         File file = new File(SystemConfiguration.TRAINING_DIRECTORY, "char" + i + ".png");
+         loader.load(frame, file.getAbsolutePath(), new CharacterRange('0' + i, '0' + i), hashMap);
       }
       scanner.addTrainingImages(hashMap);
    }
