@@ -1,5 +1,6 @@
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -11,14 +12,38 @@ public class Plade implements Serializable {
 
    private static final long serialVersionUID = 678101492539211724L;
 
-   public Plade(String fileName) {
-      this.fileName = fileName;
+   public Plade() {
       this.lines = new ArrayList<ArrayList<Integer>>();
    }
 
-   public String getFileName() {
-      return fileName;
+   public String getFileTitle() {
+      ArrayList<Integer> allNumbers = new ArrayList<Integer>();
+      for (ArrayList<Integer> line : lines) {
+         for (Integer nr : line) {
+            allNumbers.add(nr);
+         }
+      }
+      Collections.sort(allNumbers);
+      String fileTitle = "";
+      for (Integer allNumber : allNumbers) {
+         fileTitle += allNumber;
+         fileTitle += "_";
+      }
+      if(fileTitle.endsWith("_")) {
+         fileTitle = fileTitle.substring(0, fileTitle.length()-1);
+      }
+
+      return fileTitle + ".png";
    }
+
+   public String getFileName() {
+      if(fileName!=null) {
+         return fileName;
+      }
+      String fileTitle = getFileTitle();
+      return SystemConfiguration.DATA_DIRECTORY + "\\" + fileTitle + "\\" + fileTitle;
+   }
+
 
    public void addLine(ArrayList<Integer> numbers) {
       lines.add(numbers);
