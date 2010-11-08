@@ -105,40 +105,51 @@ public class BoardDownloader {
          if(image!=null) {
             BufferedImage resultImage = stripImageForColors(image);
 
-            File targetDir = new File(rootDir, picName);
+            Plade plade = execute(resultImage);
+            String fileTitle = plade.getFileTitle();
+
+            File targetDir = new File(rootDir, fileTitle);
             targetDir.mkdirs();
-            File targetFile = new File(targetDir, picName);
+
+            File targetFile = new File(targetDir, fileTitle);
             ImageIO.write(image, "PNG", targetFile);
 
-            Plade plade = execute(targetFile.getPath(), resultImage);
-            File targetOcr = new File(targetDir, "data.txt");
-            FileWriter writer = new FileWriter(targetOcr, false);
+            writeTextData(plade, targetDir);
 
-            for(int i=0;i<plade.getLineCount();i++) {
-               ArrayList<Integer> list = plade.getLine(i);
-               for (Integer integer : list) {
-                  writer.append(" " + integer);
-               }
-               writer.append("\r\n");
-            }
-            writer.close();
-
-            File targetOcrDat = new File(targetDir, "data.dat");
-            FileOutputStream fileOutputStream = new FileOutputStream(targetOcrDat);
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
-            objectOutputStream.writeObject(plade);
-            objectOutputStream.close();
-            fileOutputStream.close();
+            writeBinaryData(plade, targetDir);
          }
 
          nextStart = endPosition;
       }
    }
 
-   private Plade execute(String fileTitle, BufferedImage resultImage) throws Exception {
+   private void writeBinaryData(Plade plade, File targetDir) throws IOException {
+      File targetOcrDat = new File(targetDir, "data.dat");
+      FileOutputStream fileOutputStream = new FileOutputStream(targetOcrDat);
+      ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+      objectOutputStream.writeObject(plade);
+      objectOutputStream.close();
+      fileOutputStream.close();
+   }
+
+   private void writeTextData(Plade plade, File targetDir) throws IOException {
+      File targetOcr = new File(targetDir, "data.txt");
+      FileWriter writer = new FileWriter(targetOcr, false);
+
+      for(int i=0;i<plade.getLineCount();i++) {
+         ArrayList<Integer> list = plade.getLine(i);
+         for (Integer integer : list) {
+            writer.append(" " + integer);
+         }
+         writer.append("\r\n");
+      }
+      writer.close();
+   }
+
+   private Plade execute(BufferedImage resultImage) throws Exception {
       String text = ocrScanner.scan(resultImage, 0, 52, 0, 0, null);
       String[] lines = text.split("\n");
-      Plade plade = new Plade(fileTitle);
+      Plade plade = new Plade();
       for (String line : lines) {
          ArrayList<Integer> numbers = new ArrayList<Integer>();
          String[] numberStrings = line.split(" ");
