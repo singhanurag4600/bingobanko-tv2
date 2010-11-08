@@ -22,6 +22,7 @@ public class BoardDownloader {
    private static OCRScanner ocrScanner = new OCRScanner();
 
    private static int boards = 0;
+   private static int doubles = 0;
 
    public static void main(String[] args) throws Exception {
       frame.setVisible(true);
@@ -88,11 +89,10 @@ public class BoardDownloader {
 
          int realStart = startPosition + searchConstant.length();
          String picName = s.substring(realStart, endPosition);
-         System.out.println("Hentet plade " + (boards++) + " (" + picName + ")");
 
          URL pictureURL = new URL("http://bingobanko.tv2.dk/board/" + picName);
          URLConnection connection = pictureURL.openConnection();
-         BufferedImage image = null;
+         BufferedImage image;
          try {
             InputStream inputStream = connection.getInputStream();
             image = ImageIO.read(inputStream);
@@ -109,15 +109,21 @@ public class BoardDownloader {
             String fileTitle = plade.getFileTitle();
 
             File targetDir = new File(rootDir, fileTitle);
-            targetDir.mkdirs();
+            if(!targetDir.exists()) {
+               targetDir.mkdirs();
 
-            File targetFile = new File(targetDir, fileTitle);
-            ImageIO.write(image, "PNG", targetFile);
+               File targetFile = new File(targetDir, fileTitle);
+               ImageIO.write(image, "PNG", targetFile);
 
-            writeTextData(plade, targetDir);
+               writeTextData(plade, targetDir);
 
-            writeBinaryData(plade, targetDir);
+               writeBinaryData(plade, targetDir);
+               boards++;
+            } else {
+               doubles++;
+            }
          }
+         System.out.println("Hentet plade " + (boards+doubles) + " (" + picName + ") - Fundet " + doubles + " dubletter, " + boards + " unikke");
 
          nextStart = endPosition;
       }
