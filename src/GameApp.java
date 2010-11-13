@@ -83,6 +83,9 @@ public class GameApp {
                System.out.print(integer + ",");
             }
             System.out.println();
+            if(pladeIdx>4) {
+               break;
+            }
          }
       }
    }
