@@ -8,12 +8,21 @@ import java.util.List;
  */
 public class Plade implements Serializable {
    private String fileName;
+   private String kontrolKode;
    private ArrayList<ArrayList<Integer>> lines;
 
    private static final long serialVersionUID = 678101492539211724L;
 
    public Plade() {
       this.lines = new ArrayList<ArrayList<Integer>>();
+   }
+
+   public String getKontrolKode() {
+      return kontrolKode;
+   }
+
+   public void setKontrolKode(String kontrolKode) {
+      this.kontrolKode = kontrolKode;
    }
 
    public String getFileTitle() {

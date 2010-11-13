@@ -1,8 +1,7 @@
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Scanner;
+import java.util.*;
 
 /**
  * @author michael@familientoft.net
@@ -10,16 +9,13 @@ import java.util.Scanner;
 public class GameApp {
    private ArrayList<Plade> plader = new ArrayList<Plade>();
    private ArrayList<Integer> numbers;
+   private GameOCRBusiness ocrBusiness = new GameOCRBusiness();
 
    public static void main(String[] args) throws Exception {
-
       GameApp gameRunner = new GameApp();
       gameRunner.start(SystemConfiguration.DATA_DIRECTORY);
       System.out.println("Spillet starter, indlæst " + gameRunner.plader.size() + " bingo plader");
       gameRunner.readNumbers();
-   }
-
-   private static void createDirs() {
    }
 
    public GameApp() {
@@ -40,6 +36,7 @@ public class GameApp {
          int seenOfMax = 0;
 
          Collections.shuffle(plader);
+         ArrayList<Plade> matches = new ArrayList<Plade>();
 
          Plade.LineWinnerInfo seen = null;
          for (Plade plade : plader) {
@@ -67,15 +64,25 @@ public class GameApp {
             Plade.LineWinnerInfo lineWinnerInfo = plade.getLineWinnerInfo(state, numbers);
             int numbers1 = lineWinnerInfo.getCountOfMatches();
             if(maxSeen<numbers1) {
+               matches.clear();
                maxSeen = numbers1;
                seenOfMax = 1;
-               seen = lineWinnerInfo;
+               matches.add(plade);
             } else if(maxSeen == numbers1) {
                seenOfMax ++;
+               matches.add(plade);
             }
          }
-         if(seen!=null) {
-            System.out.println(seenOfMax + " linier med " + maxSeen + " (af " + state.getMax() + ") rigtige - mangler nummer: " + seen.toStringNumbers());
+         System.out.println(seenOfMax + " plade med " + maxSeen + " (af " + state.getMax() + ") rigtige");
+         int pladeIdx = 0;
+         for (Plade match : matches) {
+            System.out.print((pladeIdx++) + ": " + match.getKontrolKode() + ", mangler : ");
+            Plade.LineWinnerInfo lineWinnerInfo = match.getLineWinnerInfo(state, numbers);
+            List<Integer> numbers1 = lineWinnerInfo.getMissingNumbers();
+            for (Integer integer : numbers1) {
+               System.out.print(integer + ",");
+            }
+            System.out.println();
          }
       }
    }
