@@ -16,6 +16,7 @@ public class GameApp {
       gameRunner.start(SystemConfiguration.DATA_DIRECTORY);
       System.out.println("Spillet starter, indlæst " + gameRunner.plader.size() + " bingo plader");
       gameRunner.readNumbers();
+      Thread.sleep(60000);      
    }
 
    public GameApp() {
@@ -41,25 +42,15 @@ public class GameApp {
          Plade.LineWinnerInfo seen = null;
          for (Plade plade : plader) {
             if(plade.isWinner(numbers)) {
-               System.out.println("*******************************************************");
-               System.out.println("*******************************************************");
-               System.out.println("*******************************************************");
-               System.out.println("PLADE VINDER!!!\n" + plade.getFileName());
-               System.out.println("*******************************************************");
-               System.out.println("*******************************************************");
-               System.out.println("*******************************************************");
-               Runtime.getRuntime().exec("mspaint " + plade.getFileName());
+               //Runtime.getRuntime().exec("mspaint " + plade.getFileName());
+               System.out.print("\n\nVINDER: " + plade.getKontrolKode() + "\n\n");
                return;
             } else if(plade.isTwoLineWinner(numbers) && state.equals(GameState.TWOLINES)) {
                state = GameState.FULL;
-               System.out.println("*******************************************************");
-               System.out.println("***** 2 LINIE VINDER PLADE *****\n" + plade.getFileName());
-               System.out.println("*******************************************************");
-               Runtime.getRuntime().exec("mspaint " + plade.getFileName());
+               System.out.print("\n\nVINDER: " + plade.getKontrolKode() + "\n\n");
             } else if(plade.isSingleLineWinner(numbers) && state.equals(GameState.ONELINE)) {
                state = GameState.TWOLINES;
-               System.out.println("***** LINIE VINDER PLADE *****\n" + plade.getFileName());
-               Runtime.getRuntime().exec("mspaint " + plade.getFileName());
+               System.out.print("\n\nVINDER: " + plade.getKontrolKode() + "\n\n");
             }
             Plade.LineWinnerInfo lineWinnerInfo = plade.getLineWinnerInfo(state, numbers);
             int numbers1 = lineWinnerInfo.getCountOfMatches();
