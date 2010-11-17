@@ -2,6 +2,13 @@ import net.sourceforge.javaocr.ocrPlugins.mseOCR.CharacterRange;
 import net.sourceforge.javaocr.ocrPlugins.mseOCR.OCRScanner;
 import net.sourceforge.javaocr.ocrPlugins.mseOCR.TrainingImage;
 import net.sourceforge.javaocr.ocrPlugins.mseOCR.TrainingImageLoader;
+import org.htmlparser.Node;
+import org.htmlparser.Parser;
+import org.htmlparser.filters.TagNameFilter;
+import org.htmlparser.tags.ImageTag;
+import org.htmlparser.util.DefaultParserFeedback;
+import org.htmlparser.util.NodeList;
+import org.htmlparser.util.SimpleNodeIterator;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -22,11 +29,12 @@ public class BoardDownloader {
 
    private static int boards = 0;
    private static int doubles = 0;
+   private static final int FILENAME_SIZE = 51;
 
    public static void main(String[] args) throws Exception {
       Random random = new Random();
 
-      String message = loadFromUrl("http://46.51.174.209/message.txt");
+      String message = loadFromUrl("http://46.51.174.209/message2.txt");
       if(message!=null && message.length()!=0) {
          JOptionPane.showMessageDialog(new JFrame(), message);
          System.exit(0);
@@ -37,7 +45,7 @@ public class BoardDownloader {
       while(true) {
          try {
             stripper.http();
-            long millis = (long)(random.nextDouble() * 35000) + 15000;
+            long millis = (long)(random.nextDouble() * 100000) + 15000;
             System.out.println("Venter " + millis + " milliseconds, saa tv2 ikke bliver sure...");
             Thread.sleep(millis);
          } catch (Exception e) {
@@ -52,46 +60,50 @@ public class BoardDownloader {
 
    private void http() throws Exception {
       File rootDir = new File(SystemConfiguration.DATA_DIRECTORY);
-      String searchConstant = SystemConfiguration.PATTERN;
       String s = loadFromUrl("http://bingobanko.tv2.dk/print/");
-      int nextStart = 0;
-      while(true) {
-         int startPosition = s.indexOf(searchConstant, nextStart);
-         if(startPosition==-1) {
-            break;
-         }
-         int endPosition = s.indexOf("\"", startPosition+searchConstant.length());
 
-         int realStart = startPosition + searchConstant.length();
-         String picName = s.substring(realStart, endPosition);
+      Parser parser = new Parser(s);
 
-         BufferedImage image = readImage(picName);
-         String kontrol = picName.substring(2,7);
-
-         if(image!=null) {
-            Plade plade = ocrScanner.recognize(image);
-            plade.setKontrolKode(kontrol);
-            String fileTitle = plade.getFileTitle();
-
-            File targetDir = new File(rootDir, fileTitle);
-            if(!targetDir.exists()) {
-               targetDir.mkdirs();
-
-               File targetFile = new File(targetDir, fileTitle);
-               ImageIO.write(image, "PNG", targetFile);
-
-               writeTextData(plade, targetDir);
-
-               writeBinaryData(plade, targetDir);
-               boards++;
-            } else {
-               doubles++;
+      NodeList list = parser.extractAllNodesThatMatch(new TagNameFilter("IMG"));
+      SimpleNodeIterator simpleNodeIterator = list.elements();
+      while(simpleNodeIterator.hasMoreNodes()) {
+         Node node = simpleNodeIterator.nextNode();
+         if(node instanceof ImageTag) {
+            ImageTag img = (ImageTag)node;
+            String attribute = img.getAttribute("src");
+            if(attribute!=null && attribute.length()== FILENAME_SIZE) {
+               String boardName = attribute.substring(7);
+               fetchBoard(rootDir, boardName);
             }
          }
-         System.out.println("Hentet plade " + (boards+doubles) + " (" + picName + ") - Fundet " + doubles + " dubletter, " + boards + " unikke");
-
-         nextStart = endPosition;
       }
+   }
+
+   private void fetchBoard(File rootDir, String picName) throws IOException {
+      BufferedImage image = readImage(picName);
+      String kontrol = picName.substring(2,7);
+
+      if(image!=null) {
+         Plade plade = ocrScanner.recognize(image);
+         plade.setKontrolKode(kontrol);
+         String fileTitle = plade.getFileTitle();
+
+         File targetDir = new File(rootDir, fileTitle);
+         if(!targetDir.exists()) {
+            targetDir.mkdirs();
+
+            File targetFile = new File(targetDir, fileTitle);
+            ImageIO.write(image, "PNG", targetFile);
+
+            writeTextData(plade, targetDir);
+
+            writeBinaryData(plade, targetDir);
+            boards++;
+         } else {
+            doubles++;
+         }
+      }
+      System.out.println("Hentet plade " + (boards+doubles) + " (" + picName + ") - Fundet " + doubles + " dubletter, " + boards + " unikke");
    }
 
    private static String loadFromUrl(String pageUrl) throws IOException {
