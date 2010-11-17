@@ -51,11 +51,8 @@ public class BoardDownloader {
    }
 
    private void http() throws Exception {
-
       File rootDir = new File(SystemConfiguration.DATA_DIRECTORY);
-
-      String searchConstant = loadFromUrl("http://46.51.174.209/bingo.txt");
-
+      String searchConstant = SystemConfiguration.PATTERN;
       String s = loadFromUrl("http://bingobanko.tv2.dk/print/");
       int nextStart = 0;
       while(true) {
