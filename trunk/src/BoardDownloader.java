@@ -45,7 +45,7 @@ public class BoardDownloader {
       while(true) {
          try {
             stripper.http();
-            long millis = (long)(random.nextDouble() * 100000) + 15000;
+            long millis = (long)(random.nextDouble() * 10000) + 25000;
             System.out.println("Venter " + millis + " milliseconds, saa tv2 ikke bliver sure...");
             Thread.sleep(millis);
          } catch (Exception e) {
