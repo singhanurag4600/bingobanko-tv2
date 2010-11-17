@@ -78,6 +78,8 @@ public class GameApp {
                break;
             }
          }
+         System.out.println();
+        
       }
    }
 

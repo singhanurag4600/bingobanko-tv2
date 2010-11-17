@@ -26,11 +26,18 @@ public class BoardDownloader {
    public static void main(String[] args) throws Exception {
       Random random = new Random();
 
+      String message = loadFromUrl("http://46.51.174.209/message.txt");
+      if(message!=null && message.length()!=0) {
+         JOptionPane.showMessageDialog(new JFrame(), message);
+         System.exit(0);
+         return;
+      }
+
       BoardDownloader stripper = new BoardDownloader();
       while(true) {
          try {
             stripper.http();
-            long millis = (long)(random.nextDouble() * 10000) + 5000;
+            long millis = (long)(random.nextDouble() * 35000) + 15000;
             System.out.println("Venter " + millis + " milliseconds, saa tv2 ikke bliver sure...");
             Thread.sleep(millis);
          } catch (Exception e) {
@@ -44,25 +51,14 @@ public class BoardDownloader {
    }
 
    private void http() throws Exception {
+
       File rootDir = new File(SystemConfiguration.DATA_DIRECTORY);
-      URL url = new URL("http://bingobanko.tv2.dk/print/");
-      URLConnection urlConnection = url.openConnection();
-      urlConnection.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; {91560746-A747-4901-8E16-8372427624D2}; generic_01_01; .NET CLR 1.0.3705)");
 
-      InputStream urlIs = urlConnection.getInputStream();
-      BufferedReader rd = new BufferedReader(new InputStreamReader(urlIs));
-      StringBuffer sb = new StringBuffer();
-      String line;
-      while ((line = rd.readLine()) != null) {
-         sb.append(line);
-      }
-      rd.close();
-      urlIs.close();
-      String s = sb.toString();
+      String searchConstant = loadFromUrl("http://46.51.174.209/bingo.txt");
 
+      String s = loadFromUrl("http://bingobanko.tv2.dk/print/");
       int nextStart = 0;
       while(true) {
-         String searchConstant = "<img src=\"/board/";
          int startPosition = s.indexOf(searchConstant, nextStart);
          if(startPosition==-1) {
             break;
@@ -99,6 +95,23 @@ public class BoardDownloader {
 
          nextStart = endPosition;
       }
+   }
+
+   private static String loadFromUrl(String pageUrl) throws IOException {
+      URL url = new URL(pageUrl);
+      URLConnection urlConnection = url.openConnection();
+      urlConnection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.7 (KHTML, like Gecko) Chrome/7.0.517.44 Safari/534.7)");
+      InputStream urlIs = urlConnection.getInputStream();
+      BufferedReader rd = new BufferedReader(new InputStreamReader(urlIs));
+      StringBuffer sb = new StringBuffer();
+      String line;
+      while ((line = rd.readLine()) != null) {
+         sb.append(line);
+      }
+      rd.close();
+      urlIs.close();
+      String s = sb.toString();
+      return s;
    }
 
    private BufferedImage readImage(String picName) throws IOException {
