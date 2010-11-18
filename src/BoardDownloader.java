@@ -1,27 +1,19 @@
-import net.sourceforge.javaocr.ocrPlugins.mseOCR.CharacterRange;
-import net.sourceforge.javaocr.ocrPlugins.mseOCR.OCRScanner;
-import net.sourceforge.javaocr.ocrPlugins.mseOCR.TrainingImage;
-import net.sourceforge.javaocr.ocrPlugins.mseOCR.TrainingImageLoader;
 import org.htmlparser.Node;
 import org.htmlparser.Parser;
 import org.htmlparser.filters.OrFilter;
 import org.htmlparser.filters.TagNameFilter;
 import org.htmlparser.tags.ImageTag;
 import org.htmlparser.tags.ScriptTag;
-import org.htmlparser.util.DefaultParserFeedback;
-import org.htmlparser.util.NodeIterator;
 import org.htmlparser.util.NodeList;
 import org.htmlparser.util.SimpleNodeIterator;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Random;
 
 /**
@@ -77,7 +69,8 @@ public class BoardDownloader {
          if(node instanceof ImageTag) {
             ImageTag img = (ImageTag)node;
             String attribute = img.getAttribute("src");
-            if(attribute!=null && attribute.length()== FILENAME_SIZE) {
+            String decoded = EncoderUtil.decode(attribute);
+            if(decoded!=null && decoded.length()==FILENAME_SIZE) {
                String boardName = attribute.substring(7);
                fetchBoard(rootDir, boardName);
             }
