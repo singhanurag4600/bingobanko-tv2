@@ -4,9 +4,12 @@ import net.sourceforge.javaocr.ocrPlugins.mseOCR.TrainingImage;
 import net.sourceforge.javaocr.ocrPlugins.mseOCR.TrainingImageLoader;
 import org.htmlparser.Node;
 import org.htmlparser.Parser;
+import org.htmlparser.filters.OrFilter;
 import org.htmlparser.filters.TagNameFilter;
 import org.htmlparser.tags.ImageTag;
+import org.htmlparser.tags.ScriptTag;
 import org.htmlparser.util.DefaultParserFeedback;
+import org.htmlparser.util.NodeIterator;
 import org.htmlparser.util.NodeList;
 import org.htmlparser.util.SimpleNodeIterator;
 
@@ -30,11 +33,12 @@ public class BoardDownloader {
    private static int boards = 0;
    private static int doubles = 0;
    private static final int FILENAME_SIZE = 51;
+   private static final String searchConstant = "/board/";
 
    public static void main(String[] args) throws Exception {
       Random random = new Random();
 
-      String message = loadFromUrl("http://46.51.174.209/message2.txt");
+      String message = loadFromUrl("http://46.51.174.209/message3.txt");
       if(message!=null && message.length()!=0) {
          JOptionPane.showMessageDialog(new JFrame(), message);
          System.exit(0);
@@ -64,7 +68,9 @@ public class BoardDownloader {
 
       Parser parser = new Parser(s);
 
-      NodeList list = parser.extractAllNodesThatMatch(new TagNameFilter("IMG"));
+      OrFilter filter = new OrFilter(new TagNameFilter("IMG"), new TagNameFilter("script"));
+
+      NodeList list = parser.extractAllNodesThatMatch(filter);
       SimpleNodeIterator simpleNodeIterator = list.elements();
       while(simpleNodeIterator.hasMoreNodes()) {
          Node node = simpleNodeIterator.nextNode();
@@ -75,8 +81,37 @@ public class BoardDownloader {
                String boardName = attribute.substring(7);
                fetchBoard(rootDir, boardName);
             }
+         } else if(node instanceof ScriptTag) {
+            ScriptTag tag = (ScriptTag)node;
+            String scriptCode = tag.getScriptCode();
+            if(scriptCode.indexOf(searchConstant)!=-1) {
+               ArrayList<String> boardNames = getBoards(scriptCode);
+               for (String boardName : boardNames) {
+                  fetchBoard(rootDir, boardName);
+               }
+            }
          }
       }
+   }
+
+   private ArrayList<String> getBoards(String s) throws Exception {
+      int nextStart = 0;
+      ArrayList<String> boards = new ArrayList<String>();
+
+      while(true) {
+         int startPosition = s.indexOf(searchConstant, nextStart);
+         if(startPosition==-1) {
+            break;
+         }
+         int endPosition = s.indexOf("\"", startPosition+searchConstant.length());
+
+         int realStart = startPosition + searchConstant.length();
+         String picName = s.substring(realStart, endPosition);
+
+         boards.add(picName);
+         nextStart = endPosition;
+      }
+      return boards;
    }
 
    private void fetchBoard(File rootDir, String picName) throws IOException {
@@ -107,24 +142,28 @@ public class BoardDownloader {
    }
 
    private static String loadFromUrl(String pageUrl) throws IOException {
-      URL url = new URL(pageUrl);
-      URLConnection urlConnection = url.openConnection();
-      urlConnection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.7 (KHTML, like Gecko) Chrome/7.0.517.44 Safari/534.7)");
-      InputStream urlIs = urlConnection.getInputStream();
-      BufferedReader rd = new BufferedReader(new InputStreamReader(urlIs));
-      StringBuffer sb = new StringBuffer();
-      String line;
-      while ((line = rd.readLine()) != null) {
-         sb.append(line);
+      try {
+         URL url = new URL(pageUrl);
+         URLConnection urlConnection = url.openConnection();
+         urlConnection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.7 (KHTML, like Gecko) Chrome/7.0.517.44 Safari/534.7)");
+         InputStream urlIs = urlConnection.getInputStream();
+         BufferedReader rd = new BufferedReader(new InputStreamReader(urlIs));
+         StringBuffer sb = new StringBuffer();
+         String line;
+         while ((line = rd.readLine()) != null) {
+            sb.append(line);
+         }
+         rd.close();
+         urlIs.close();
+         String s = sb.toString();
+         return s;
+      } catch (IOException e) {
+         return null;
       }
-      rd.close();
-      urlIs.close();
-      String s = sb.toString();
-      return s;
    }
 
    private BufferedImage readImage(String picName) throws IOException {
-      URL pictureURL = new URL("http://bingobanko.tv2.dk/board/" + picName);
+      URL pictureURL = new URL("http://bingobanko.tv2.dk" + searchConstant + picName);
       URLConnection connection = pictureURL.openConnection();
       BufferedImage image;
       try {
