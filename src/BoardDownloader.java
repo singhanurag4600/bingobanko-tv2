@@ -71,7 +71,7 @@ public class BoardDownloader {
             String attribute = img.getAttribute("src");
             String decoded = EncoderUtil.decode(attribute);
             if(decoded!=null && decoded.length()==FILENAME_SIZE) {
-               String boardName = attribute.substring(7);
+               String boardName = decoded.substring(7);
                fetchBoard(rootDir, boardName);
             }
          } else if(node instanceof ScriptTag) {
