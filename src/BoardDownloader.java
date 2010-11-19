@@ -70,9 +70,15 @@ public class BoardDownloader {
             ImageTag img = (ImageTag)node;
             String attribute = img.getAttribute("src");
             String decoded = EncoderUtil.decode(attribute);
-            if(decoded!=null && decoded.length()==FILENAME_SIZE) {
-               String boardName = decoded.substring(7);
-               fetchBoard(rootDir, boardName);
+            if(decoded!=null) {
+               int position = decoded.indexOf("board");
+               if(position!=-1) {
+                  int end = decoded.indexOf(".png");
+                  if(end!=-1) {
+                     String boardName = decoded.substring(position+6, end+4);
+                     fetchBoard(rootDir, boardName);
+                  }
+               }
             }
          } else if(node instanceof ScriptTag) {
             ScriptTag tag = (ScriptTag)node;
