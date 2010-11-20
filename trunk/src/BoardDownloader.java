@@ -73,11 +73,8 @@ public class BoardDownloader {
             if(decoded!=null) {
                int position = decoded.indexOf("board");
                if(position!=-1) {
-                  int end = decoded.indexOf(".png");
-                  if(end!=-1) {
-                     String boardName = decoded.substring(position+6, end+4);
-                     fetchBoard(rootDir, boardName);
-                  }
+                  String boardName = decoded.substring(position+6);
+                  fetchBoard(rootDir, boardName);
                }
             }
          } else if(node instanceof ScriptTag) {
