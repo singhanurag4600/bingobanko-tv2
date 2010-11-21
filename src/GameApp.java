@@ -44,13 +44,20 @@ public class GameApp {
             if(plade.isWinner(numbers)) {
                //Runtime.getRuntime().exec("mspaint " + plade.getFileName());
                System.out.print("\n\nVINDER: " + plade.getKontrolKode() + "\n\n");
+               Runtime.getRuntime().exec("mspaint " + plade.getFileName());
+               
                return;
             } else if(plade.isTwoLineWinner(numbers) && state.equals(GameState.TWOLINES)) {
                state = GameState.FULL;
                System.out.print("\n\nVINDER: " + plade.getKontrolKode() + "\n\n");
+               Runtime.getRuntime().exec("mspaint " + plade.getFileName());
+
             } else if(plade.isSingleLineWinner(numbers) && state.equals(GameState.ONELINE)) {
                state = GameState.TWOLINES;
                System.out.print("\n\nVINDER: " + plade.getKontrolKode() + "\n\n");
+
+               Runtime.getRuntime().exec("mspaint " + plade.getFileName());
+
             }
             Plade.LineWinnerInfo lineWinnerInfo = plade.getLineWinnerInfo(state, numbers);
             int numbers1 = lineWinnerInfo.getCountOfMatches();
