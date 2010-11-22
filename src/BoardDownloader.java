@@ -13,8 +13,7 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.Random;
+import java.util.*;
 
 /**
  * @author michael@familientoft.net
@@ -25,7 +24,8 @@ public class BoardDownloader {
    private static int boards = 0;
    private static int doubles = 0;
    private static final int FILENAME_SIZE = 51;
-   private static final String searchConstant = "/board/";
+   private static final String searchConstant = "/plader/";
+   private static final String BINGOBANKO_URL = "bingobanko.tv2.dk";
 
    public static void main(String[] args) throws Exception {
       Random random = new Random();
@@ -41,7 +41,7 @@ public class BoardDownloader {
       while(true) {
          try {
             stripper.http();
-            long millis = (long)(random.nextDouble() * 10000) + 25000;
+            long millis = (long)(random.nextDouble() * 35000) + 5000;
             System.out.println("Venter " + millis + " milliseconds, saa tv2 ikke bliver sure...");
             Thread.sleep(millis);
          } catch (Exception e) {
@@ -56,11 +56,15 @@ public class BoardDownloader {
 
    private void http() throws Exception {
       File rootDir = new File(SystemConfiguration.DATA_DIRECTORY);
-      String s = loadFromUrl("http://bingobanko.tv2.dk/print/");
+      String s = loadFromUrl("http://" + BINGOBANKO_URL + "/print/");
 
       Parser parser = new Parser(s);
 
       OrFilter filter = new OrFilter(new TagNameFilter("IMG"), new TagNameFilter("script"));
+
+      Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("Europe/Copenhagen"), new Locale("da", "DK"));
+      int weekIdx = cal.get(Calendar.WEEK_OF_YEAR);
+      int bingoIdx = weekIdx - 24;
 
       NodeList list = parser.extractAllNodesThatMatch(filter);
       SimpleNodeIterator simpleNodeIterator = list.elements();
@@ -70,12 +74,14 @@ public class BoardDownloader {
             ImageTag img = (ImageTag)node;
             String attribute = img.getAttribute("src");
             String decoded = EncoderUtil.decode(attribute);
+
             if(decoded!=null) {
-               int position = decoded.indexOf("board");
+               int position = decoded.indexOf("/" + String.valueOf(bingoIdx));
                if(position!=-1) {
-                  String boardName = decoded.substring(position+6);
-                  fetchBoard(rootDir, boardName);
-               }
+                  String prefix = getPreviousBlock(decoded, position-1);
+                  String boardName = decoded.substring(position+1);
+                  fetchBoard(rootDir, prefix, boardName);
+               }  
             }
          } else if(node instanceof ScriptTag) {
             ScriptTag tag = (ScriptTag)node;
@@ -83,11 +89,23 @@ public class BoardDownloader {
             if(scriptCode.indexOf(searchConstant)!=-1) {
                ArrayList<String> boardNames = getBoards(scriptCode);
                for (String boardName : boardNames) {
-                  fetchBoard(rootDir, boardName);
+                  fetchBoard(rootDir, searchConstant, boardName);
                }
             }
          }
       }
+   }
+
+   private String getPreviousBlock(String decoded, int position) {
+      StringBuffer previous = new StringBuffer();
+      for(int i=position;i>=0;i--) {
+         char ch = decoded.charAt(i);
+         previous.append(ch);
+         if(ch=='/') {
+            break;
+         }
+      }
+      return previous.reverse().toString();
    }
 
    private ArrayList<String> getBoards(String s) throws Exception {
@@ -110,8 +128,11 @@ public class BoardDownloader {
       return boards;
    }
 
-   private void fetchBoard(File rootDir, String picName) throws IOException {
-      BufferedImage image = readImage(picName);
+   private void fetchBoard(File rootDir, String prefix, String picName) throws IOException {
+      BufferedImage image = readImage(prefix, picName);
+      if(image==null) {
+         return;
+      }
       String kontrol = picName.substring(2,7);
 
       if(image!=null) {
@@ -141,7 +162,8 @@ public class BoardDownloader {
       try {
          URL url = new URL(pageUrl);
          URLConnection urlConnection = url.openConnection();
-         urlConnection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.7 (KHTML, like Gecko) Chrome/7.0.517.44 Safari/534.7)");
+         urlConnection.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; WOW64; Trident/4.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; .NET4.0C; FDM)");
+         urlConnection.setRequestProperty("referer", "http://" + BINGOBANKO_URL + "/print");
          InputStream urlIs = urlConnection.getInputStream();
          BufferedReader rd = new BufferedReader(new InputStreamReader(urlIs));
          StringBuffer sb = new StringBuffer();
@@ -158,9 +180,11 @@ public class BoardDownloader {
       }
    }
 
-   private BufferedImage readImage(String picName) throws IOException {
-      URL pictureURL = new URL("http://bingobanko.tv2.dk" + searchConstant + picName);
+   private BufferedImage readImage(String prefix, String picName) throws IOException {
+      URL pictureURL = new URL("http://" + BINGOBANKO_URL + prefix + "/" + picName);
       URLConnection connection = pictureURL.openConnection();
+      connection.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; WOW64; Trident/4.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; .NET4.0C; FDM)");
+      connection.setRequestProperty("referer", "http://" + BINGOBANKO_URL + "/print");
       BufferedImage image;
       try {
          InputStream inputStream = connection.getInputStream();
