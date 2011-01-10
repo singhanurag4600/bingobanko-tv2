@@ -77,7 +77,7 @@ public class BoardDownloader {
 
       Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("Europe/Copenhagen"), new Locale("da", "DK"));
       int weekIdx = cal.get(Calendar.WEEK_OF_YEAR);
-      int bingoIdx = weekIdx - 28;
+      int bingoIdx = 22 + weekIdx;
 
       NodeList list = parser.extractAllNodesThatMatch(filter);
       SimpleNodeIterator simpleNodeIterator = list.elements();
