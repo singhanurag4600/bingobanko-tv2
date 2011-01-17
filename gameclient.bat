@@ -8,7 +8,7 @@ set OUTDIR=%BINDIR%out
 IF NOT EXIST "%OUTDIR%" goto missingout
 :continue
 
-java -cp lib/JavaOCR.jar;lib/jai_imageio.jar;out/. GameApp
+%JAVA_HOME%/bin/java -cp lib/JavaOCR.jar;lib/jai_imageio.jar;lib/filterbuilder.jar;lib/htmllexer.jar;lib/htmlparser.jar;out/. GameApp
 goto end
 
 :missingjava
