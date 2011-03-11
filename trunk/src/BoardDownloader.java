@@ -69,7 +69,7 @@ public class BoardDownloader {
 
    private void http() throws Exception {
       File rootDir = new File(SystemConfiguration.DATA_DIRECTORY);
-      String s = loadFromUrl("http://" + BINGOBANKO_URL + "/print/");
+      String s = loadFromUrl("http://" + BINGOBANKO_URL + "/print/?boardCount=9");
 
       Parser parser = new Parser(s);
 
@@ -77,7 +77,7 @@ public class BoardDownloader {
 
       Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("Europe/Copenhagen"), new Locale("da", "DK"));
       int weekIdx = cal.get(Calendar.WEEK_OF_YEAR);
-      int bingoIdx = 22 + weekIdx;
+      int bingoIdx = 15 + weekIdx;
 
       NodeList list = parser.extractAllNodesThatMatch(filter);
       SimpleNodeIterator simpleNodeIterator = list.elements();
