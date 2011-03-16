@@ -53,7 +53,7 @@ public class BoardDownloader {
          try {
             currentUserAgent = pickUserAgent();
             stripper.http();
-            long millis = (long) (random.nextDouble() * 1000) + 5000;
+            long millis = (long) (random.nextDouble() * 10000) + 5000;
             System.out.println("Venter " + millis + " milliseconds, saa tv2 ikke bliver sure...");
             Thread.sleep(millis);
          } catch (Exception e) {
@@ -77,7 +77,7 @@ public class BoardDownloader {
 
       Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("Europe/Copenhagen"), new Locale("da", "DK"));
       int weekIdx = cal.get(Calendar.WEEK_OF_YEAR);
-      int bingoIdx = 15 + weekIdx;
+      int bingoIdx = 14 + weekIdx;
 
       NodeList list = parser.extractAllNodesThatMatch(filter);
       SimpleNodeIterator simpleNodeIterator = list.elements();
