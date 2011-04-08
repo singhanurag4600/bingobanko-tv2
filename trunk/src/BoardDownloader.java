@@ -55,7 +55,7 @@ public class BoardDownloader {
             stripper.http();
             long millis = (long) (random.nextDouble() * 10000) + 5000;
         	System.out.println();
-            System.out.println("Venter " + millis + " milliseconds, s† TV2 ikke bliver sure...");
+            System.out.println("Venter " + millis + " millisekunder, s† TV2 ikke bliver sure...");
 			System.out.println();
             Thread.sleep(millis);
          } catch (Exception e) {
@@ -71,7 +71,7 @@ public class BoardDownloader {
 
    private void http() throws Exception {
       File rootDir = new File(SystemConfiguration.DATA_DIRECTORY);
-      String s = loadFromUrl("http://" + BINGOBANKO_URL + "/print/?boardCount=9");
+      String s = loadFromUrl("http://anonymouse.org/cgi-bin/anon-www.cgi/http://" + BINGOBANKO_URL + "/print/?boardCount=9");
 
       Parser parser = new Parser(s);
 
