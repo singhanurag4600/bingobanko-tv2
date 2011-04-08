@@ -54,7 +54,7 @@ public class BoardDownloader {
             currentUserAgent = pickUserAgent();
             stripper.http();
             long millis = (long) (random.nextDouble() * 10000) + 5000;
-            System.out.println("Venter " + millis + " milliseconds, saa tv2 ikke bliver sure...");
+            System.out.println("Venter " + millis + " milliseconds, s† TV2 ikke bliver sure...");
             Thread.sleep(millis);
          } catch (Exception e) {
             System.out.println("Ignoring error from server : " + e.getMessage());
