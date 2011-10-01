@@ -161,12 +161,6 @@ public class GameOCRBusiness {
          }
       }
 
-/*      File file = new File("C:/temp/debug2.png");
-      if(file.exists()) {
-         file.delete();
-      }
-      ImageIO.write(image, "PNG", file);*/
-
       return image;
    }
 
