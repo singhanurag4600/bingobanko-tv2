@@ -14,29 +14,32 @@ import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 /**
  * @author michael@familientoft.net
  */
 public class BoardDownloader {
    private static GameOCRBusiness ocrScanner = new GameOCRBusiness();
-   
-   private static String[] userAgents = new String[] {
-      "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0; Trident/5.0; SLCC1; .NET CLR 3.0.50727; Media Center PC 5.0; .NET CLR",
-      "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; es-ES; rv:1.9.2.12) Gecko/20101026 Firefox/3.7.12",
-      "Mozilla/5.0 (Windows; U; Windows NT 5.1; fr; rv:1.9.2.12) Gecko/20101026 Firefox/3.6.12 (.NET CLR 3.6.30729)",
-      "Mozilla/5.0 (X11; U; Linux x86_64; en-US) AppleWebKit/544.12 (KHTML, like Gecko) Chrome/9.0.587.0 Safari/634.12",
-      "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.1.4322)",
-      "Mozilla/5.0 (X11; U; Linux x86_64; en-US) AppleWebKit/574.12 (KHTML, like Gecko) Chrome/9.0.587.0 Safari/534.12",
-      "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; Trident/5.0; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5",
-      "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0; Trident/9.0; SLCC1; .NET CLR 2.0.50727; Media Center PC 5.0; .NET CLR",
-      "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; Trident/11.0; GTB6.6; InfoPath.1; .NET CLR 2.0.50727; .NET CLR 3.0.450",
-      "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)",
-      "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.7.5) Gecko/30060127 Netscape/8.1",
-      "Mozilla/4.0 (compatible; MSIE 6.0; MSIE 5.5; Windows NT 5.1) Opera 6.02 [en]",
-      "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 1.1.2322; .NET CLR 2.0.50727; .NET CLR 3.0.04506.30)",
-      "Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US) AppleWebKit/531.0 (KHTML, like Gecko) Chrome/3.0.198.0 Safari/532.0",
-      "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_5_7; en-US) AppleWebKit/431.0 (KHTML, like Gecko) Chrome/3.0.183 Safari/531.0"
+
+   private static String[] userAgents = new String[]{
+           "Mozilla/5.0 (iPad; U; CPU OS 3_2 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Version/4.0.4 Mobile/7B334b Safari/531.21.10",
+           "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0; Trident/5.0; SLCC1; .NET CLR 3.0.%X%; Media Center PC 5.0; .NET CLR",
+           "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; es-ES; rv:1.9.2.12) Gecko/20101026 Firefox/3.7.12",
+           "Mozilla/5.0 (Windows; U; Windows NT 5.1; fr; rv:1.9.2.12) Gecko/20101026 Firefox/3.6.12 (.NET CLR 3.6.%X%)",
+           "Mozilla/5.0 (X11; U; Linux x86_64; en-US) AppleWebKit/544.12 (KHTML, like Gecko) Chrome/9.0.%X%.0 Safari/634.12",
+           "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.1.%X%)",
+           "Mozilla/5.0 (X11; U; Linux x86_64; en-US) AppleWebKit/574.12 (KHTML, like Gecko) Chrome/9.0.587.0 Safari/534.12",
+           "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; Trident/5.0; .NET CLR 2.0.%X%; .NET CLR 3.0.%X%.2152; .NET CLR 3.5",
+           "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0; Trident/9.0; SLCC1; .NET CLR 2.0.%X%; Media Center PC 5.0; .NET CLR",
+           "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; Trident/11.0; GTB6.6; InfoPath.1; .NET CLR 2.0.%X%; .NET CLR 3.0.450",
+           "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)",
+           "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.7.5) Gecko/%X% Netscape/8.1",
+           "Mozilla/4.0 (compatible; MSIE 6.0; MSIE 5.5; Windows NT 5.1) Opera 6.02 [en]",
+           "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 1.1.2322; .NET CLR 2.0.50727; .NET CLR 3.0.%X%.30)",
+           "Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US) AppleWebKit/531.0 (KHTML, like Gecko) Chrome/3.0.198.0 Safari/532.0",
+           "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_5_7; en-US) AppleWebKit/431.0 (KHTML, like Gecko) Chrome/3.0.183 Safari/531.0"
    };
 
    private static int boards = 0;
@@ -54,9 +57,9 @@ public class BoardDownloader {
             currentUserAgent = pickUserAgent();
             stripper.http();
             long millis = (long) (random.nextDouble() * 10000) + 5000;
-        	System.out.println();
-            System.out.println("Venter " + millis + " millisekunder, s† TV2 ikke bliver sure...");
-			System.out.println();
+            System.out.println();
+            System.out.println("Venter " + millis + " millisekunder, saa TV2 ikke bliver sure...");
+            System.out.println();
             Thread.sleep(millis);
          } catch (Exception e) {
             System.out.println("Ignoring error from server : " + e.getMessage());
@@ -77,9 +80,7 @@ public class BoardDownloader {
 
       OrFilter filter = new OrFilter(new TagNameFilter("IMG"), new TagNameFilter("script"));
 
-      Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("Europe/Copenhagen"), new Locale("da", "DK"));
-      int weekIdx = cal.get(Calendar.WEEK_OF_YEAR);
-      int bingoIdx = 14 + weekIdx;
+      int bingoIdx = (int)((System.currentTimeMillis() - 1317495600085l)/604800000)+42;
 
       NodeList list = parser.extractAllNodesThatMatch(filter);
       SimpleNodeIterator simpleNodeIterator = list.elements();
@@ -115,7 +116,7 @@ public class BoardDownloader {
    }
 
 
-   private static void fetchBoard(File rootDir, String prefix, String picName) throws IOException {
+   private static void fetchBoard(File rootDir, String prefix, String picName) throws Exception {
       BufferedImage image = readImage(prefix, picName);
       if (image == null) {
          return;
@@ -128,7 +129,7 @@ public class BoardDownloader {
       System.out.println("Hentet plade " + (boards + doubles) + " (" + picName + ") - Fundet " + doubles + " dubletter, " + boards + " unikke");
    }
 
-   private static void processImage(File rootDir, BufferedImage image, String kontrol) throws IOException {
+   private static void processImage(File rootDir, BufferedImage image, String kontrol) throws Exception {
       Plade plade = ocrScanner.recognize(image);
       plade.setKontrolKode(kontrol);
       String fileTitle = plade.getFileTitle();
@@ -138,6 +139,9 @@ public class BoardDownloader {
          targetDir.mkdirs();
 
          File targetFile = new File(targetDir, fileTitle);
+         if (targetFile.exists()) {
+            targetFile.delete();
+         }
          ImageIO.write(image, "PNG", targetFile);
 
          writeTextData(plade, targetDir);
@@ -149,11 +153,17 @@ public class BoardDownloader {
       }
    }
 
+   private static Random rnd = new Random(System.currentTimeMillis());
+
    private static String loadFromUrl(String pageUrl) throws IOException {
       try {
          URL url = new URL(pageUrl);
          URLConnection urlConnection = url.openConnection();
-         urlConnection.setRequestProperty("User-Agent", currentUserAgent);
+         String currentUserAgent1 = currentUserAgent;
+
+         currentUserAgent1 = currentUserAgent1.replaceAll("%X%", String.valueOf(((int) (rnd.nextDouble() * 30000))));
+         urlConnection.setRequestProperty("User-Agent", currentUserAgent1);
+         urlConnection.setRequestProperty("Referer", "http://bingobanko.tv2.dk/print/");
          InputStream urlIs = urlConnection.getInputStream();
          BufferedReader rd = new BufferedReader(new InputStreamReader(urlIs));
          StringBuffer sb = new StringBuffer();
@@ -213,6 +223,6 @@ public class BoardDownloader {
 
    private static String pickUserAgent() {
       double v = Math.random() * userAgents.length;
-      return userAgents[(int)v];
+      return userAgents[(int) v];
    }
 }
