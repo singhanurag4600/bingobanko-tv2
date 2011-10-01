@@ -14,7 +14,7 @@ public class GameApp {
    public static void main(String[] args) throws Exception {
       GameApp gameRunner = new GameApp();
       gameRunner.start(SystemConfiguration.DATA_DIRECTORY);
-      System.out.println("Spillet starter, indl‘st " + gameRunner.plader.size() + " bingo plader");
+      System.out.println("Spillet starter, indlaest " + gameRunner.plader.size() + " bingo plader");
       gameRunner.readNumbers();
       Thread.sleep(60000);      
    }
@@ -71,29 +71,27 @@ public class GameApp {
                matches.add(plade);
             }
          }
-         System.out.println();			 
          System.out.println(seenOfMax + " plade med " + maxSeen + " (af " + state.getMax() + ") rigtige");
-         System.out.println();		 
-         int pladeIdx = 1;
+         int pladeIdx = 0;
          for (Plade match : matches) {
-            System.out.print((pladeIdx++) + ": " + match.getKontrolKode() + ", mangler : ");
+            System.out.print((pladeIdx++) + ": mangler : ");
             Plade.LineWinnerInfo lineWinnerInfo = match.getLineWinnerInfo(state, numbers);
             List<Integer> numbers1 = lineWinnerInfo.getMissingNumbers();
             for (Integer integer : numbers1) {
                System.out.print(integer + ",");
             }
+            System.out.print(" " + match.getKontrolKode());
             System.out.println();
-            if(pladeIdx>9) {
+            if(pladeIdx>4) {
                break;
             }
          }
          System.out.println();
-        
       }
    }
 
    private void start(String path) throws Exception {
-      System.out.println("Indl‘ser bingoplader, vent et ›jeblik");
+      System.out.println("Indlaeser bingoplader, vent et oejeblik");
       File dir = new File(path);
       File[] files = dir.listFiles();
       int nr = 0;
