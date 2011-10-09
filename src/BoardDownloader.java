@@ -80,7 +80,7 @@ public class BoardDownloader {
 
       OrFilter filter = new OrFilter(new TagNameFilter("IMG"), new TagNameFilter("script"));
 
-      int bingoIdx = (int)((System.currentTimeMillis() - 1317495600085l)/604800000)+42;
+      int bingoIdx = (int)((System.currentTimeMillis() - 1317495600085l)/604800000)+41;
 
       NodeList list = parser.extractAllNodesThatMatch(filter);
       SimpleNodeIterator simpleNodeIterator = list.elements();
