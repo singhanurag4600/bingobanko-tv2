@@ -51,16 +51,38 @@ public class BoardDownloader {
    public static void main(String[] args) throws Exception {
       Random random = new Random();
 
+      System.out.println("Starter downloader .. vent ...");
+
+      File rootDir = new File(SystemConfiguration.DATA_DIRECTORY);
+      if (rootDir.exists() && args.length==0) {
+         Scanner sc = new Scanner(System.in);
+         System.out.println("Du har allerede et data bibliotek, skal jeg slette dem for dig forst?");
+         System.out.print("Skal jeg slette alle dine plader ? (Ja / nej) >");
+         String next = sc.next();
+         if (next == null || next.length() == 0 || next.equalsIgnoreCase("J") || next.equalsIgnoreCase("JA")) {
+            if (!deleteDirectory(rootDir)) {
+               System.out.println("Advarsel; Data biblioteket kunne ikke slettes");
+            } else {
+               System.out.println("Data biblioteket er slettet... starter paa frisk!");
+               rootDir.mkdir();
+            }
+         }
+      }
+
       BoardDownloader stripper = new BoardDownloader();
       while (true) {
          try {
             currentUserAgent = pickUserAgent();
-            stripper.http();
-            long millis = (long) (random.nextDouble() * 10000) + 5000;
-            System.out.println();
-            System.out.println("Venter " + millis + " millisekunder, saa TV2 ikke bliver sure...");
-            System.out.println();
-            Thread.sleep(millis);
+            if (stripper.http(rootDir) != 0) {
+               long millis = (long) (random.nextDouble() * 10000) + 5000;
+               System.out.println();
+               System.out.println("Venter " + millis + " millisekunder, saa TV2 ikke bliver sure...");
+               System.out.println();
+               Thread.sleep(millis);
+            } else {
+               // No boards was fetched, we silently wait a bit
+               Thread.sleep(2000);
+            }
          } catch (Exception e) {
             System.out.println("Ignoring error from server : " + e.getMessage());
             e.printStackTrace();
@@ -72,16 +94,31 @@ public class BoardDownloader {
    public BoardDownloader() {
    }
 
-   private void http() throws Exception {
-      File rootDir = new File(SystemConfiguration.DATA_DIRECTORY);
+   private static Integer bingoIndex = null;
+
+   private int http(File rootDir) throws Exception {
+
       String s = loadFromUrl("http://" + BINGOBANKO_URL + "/print/?boardCount=9");
 
       Parser parser = new Parser(s);
 
       OrFilter filter = new OrFilter(new TagNameFilter("IMG"), new TagNameFilter("script"));
 
-      int bingoIdx = (int)((System.currentTimeMillis() - 1317495600085l)/604800000)+42;
+      if (bingoIndex == null) {
+         bingoIndex = (int) ((System.currentTimeMillis() - 1317495600085l) / 604800000) + 40;
+      }
 
+      int fetchCount = fetchBoards(rootDir, parser, filter, bingoIndex);
+
+      if (fetchCount == 0) {
+         bingoIndex++;
+      }
+
+      return fetchCount;
+   }
+
+   private int fetchBoards(File rootDir, Parser parser, OrFilter filter, int bingoIdx) throws Exception {
+      int fetchCount = 0;
       NodeList list = parser.extractAllNodesThatMatch(filter);
       SimpleNodeIterator simpleNodeIterator = list.elements();
       while (simpleNodeIterator.hasMoreNodes()) {
@@ -97,10 +134,12 @@ public class BoardDownloader {
                   String prefix = getPreviousBlock(decoded, position - 1);
                   String boardName = decoded.substring(position + 1);
                   fetchBoard(rootDir, prefix, boardName);
+                  fetchCount++;
                }
             }
          }
       }
+      return fetchCount;
    }
 
    private String getPreviousBlock(String decoded, int position) {
@@ -224,5 +263,19 @@ public class BoardDownloader {
    private static String pickUserAgent() {
       double v = Math.random() * userAgents.length;
       return userAgents[(int) v];
+   }
+
+   static public boolean deleteDirectory(File path) {
+      if (path.exists()) {
+         File[] files = path.listFiles();
+         for (int i = 0; i < files.length; i++) {
+            if (files[i].isDirectory()) {
+               deleteDirectory(files[i]);
+            } else {
+               files[i].delete();
+            }
+         }
+      }
+      return (path.delete());
    }
 }
