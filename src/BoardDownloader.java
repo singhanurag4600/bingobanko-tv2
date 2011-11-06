@@ -54,19 +54,8 @@ public class BoardDownloader {
       System.out.println("Starter downloader .. vent ...");
 
       File rootDir = new File(SystemConfiguration.DATA_DIRECTORY);
-      if (rootDir.exists() && args.length==0) {
-         Scanner sc = new Scanner(System.in);
-         System.out.println("Du har allerede et data bibliotek, skal jeg slette dem for dig forst?");
-         System.out.print("Skal jeg slette alle dine plader ? (Ja / nej) >");
-         String next = sc.next();
-         if (next == null || next.length() == 0 || next.equalsIgnoreCase("J") || next.equalsIgnoreCase("JA")) {
-            if (!deleteDirectory(rootDir)) {
-               System.out.println("Advarsel; Data biblioteket kunne ikke slettes");
-            } else {
-               System.out.println("Data biblioteket er slettet... starter paa frisk!");
-               rootDir.mkdir();
-            }
-         }
+      if (isDirtyDataDir(rootDir) && args.length==0) {
+         maybeCleanDataDirectory(rootDir);
       }
 
       BoardDownloader stripper = new BoardDownloader();
@@ -154,7 +143,6 @@ public class BoardDownloader {
       return previous.reverse().toString();
    }
 
-
    private static void fetchBoard(File rootDir, String prefix, String picName) throws Exception {
       BufferedImage image = readImage(prefix, picName);
       if (image == null) {
@@ -167,6 +155,7 @@ public class BoardDownloader {
       }
       System.out.println("Hentet plade " + (boards + doubles) + " (" + picName + ") - Fundet " + doubles + " dubletter, " + boards + " unikke");
    }
+
 
    private static void processImage(File rootDir, BufferedImage image, String kontrol) throws Exception {
       Plade plade = ocrScanner.recognize(image);
@@ -277,5 +266,37 @@ public class BoardDownloader {
          }
       }
       return (path.delete());
+   }
+
+   static public boolean isDirtyDirectory(File path) {
+      if (path.exists()) {
+         File[] files = path.listFiles();
+         for (int i = 0; i < files.length; i++) {
+            if (files[i].isDirectory() && !files[i].isHidden()) {
+               return true;
+            }
+         }
+      }
+      return false;
+   }
+
+
+   private static void maybeCleanDataDirectory(File rootDir) {
+      Scanner sc = new Scanner(System.in);
+      System.out.println("Du har allerede et data bibliotek, skal jeg slette dem for dig forst?");
+      System.out.print("Skal jeg slette alle dine plader ? (Ja / nej) >");
+      String next = sc.next();
+      if (next == null || next.length() == 0 || next.equalsIgnoreCase("J") || next.equalsIgnoreCase("JA")) {
+         if (!deleteDirectory(rootDir)) {
+            System.out.println("Advarsel; Data biblioteket kunne ikke slettes");
+         } else {
+            System.out.println("Data biblioteket er slettet... starter paa frisk!");
+            rootDir.mkdir();
+         }
+      }
+   }
+
+   private static boolean isDirtyDataDir(File rootDir) {
+      return isDirtyDirectory(rootDir);
    }
 }
