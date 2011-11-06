@@ -19,3 +19,4 @@ echo First run compile.bat!
 goto continue
 
 :end
+pause
