@@ -284,7 +284,7 @@ public class BoardDownloader {
    private static void maybeCleanDataDirectory(File rootDir) {
       Scanner sc = new Scanner(System.in);
       System.out.println("Du har allerede et data bibliotek, skal jeg slette dem for dig forst?");
-      System.out.print("Skal jeg slette alle dine plader ? (Ja / nej) >");
+      System.out.print("Slet data bibliotek ? (Ja / nej) >");
       String next = sc.next();
       if (next == null || next.length() == 0 || next.equalsIgnoreCase("J") || next.equalsIgnoreCase("JA")) {
          if (!deleteDirectory(rootDir)) {
