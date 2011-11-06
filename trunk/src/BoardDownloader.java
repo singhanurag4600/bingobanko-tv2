@@ -65,7 +65,7 @@ public class BoardDownloader {
             if (stripper.http(rootDir) != 0) {
                long millis = (long) (random.nextDouble() * 10000) + 5000;
                System.out.println();
-               System.out.println("Venter " + millis + " millisekunder, saa TV2 ikke bliver sure...");
+               System.out.println("Venter " + millis + " millisekunder, s† TV2 ikke bliver sure...");
                System.out.println();
                Thread.sleep(millis);
             } else {
@@ -283,14 +283,14 @@ public class BoardDownloader {
 
    private static void maybeCleanDataDirectory(File rootDir) {
       Scanner sc = new Scanner(System.in);
-      System.out.println("Du har allerede et data bibliotek, skal jeg slette dem for dig forst?");
+      System.out.println("Du har allerede et data bibliotek, skal jeg slette det for dig f›rst?");
       System.out.print("Slet data bibliotek ? (Ja / nej) >");
       String next = sc.next();
       if (next == null || next.length() == 0 || next.equalsIgnoreCase("J") || next.equalsIgnoreCase("JA")) {
          if (!deleteDirectory(rootDir)) {
             System.out.println("Advarsel; Data biblioteket kunne ikke slettes");
          } else {
-            System.out.println("Data biblioteket er slettet... starter paa frisk!");
+            System.out.println("Data biblioteket er slettet... starter p† en frisk!");
             rootDir.mkdir();
          }
       }
