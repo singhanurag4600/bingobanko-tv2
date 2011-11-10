@@ -70,7 +70,8 @@ public class BoardDownloader {
                Thread.sleep(millis);
             } else {
                // No boards was fetched, we silently wait a bit
-               Thread.sleep(2000);
+			   System.out.println("Venter p† at plader bliver tilg‘ngelig....(her kan systemet h‘nge)");
+                            Thread.sleep(2000);
             }
          } catch (Exception e) {
             System.out.println("Ignoring error from server : " + e.getMessage());
